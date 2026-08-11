@@ -48,8 +48,13 @@ in the browser and on the server.
 
 ## Deploying
 
-Hosted on [Volcano](https://volcano.dev). Deploys happen on push to `main` through the connected
-repository; `npx @volcano.dev/cli cloud frontends deploy` does the same thing by hand.
+Hosted on [Volcano](https://volcano.dev), deployed from a working copy:
+
+```sh
+volcano login
+volcano use clanker2clanker
+volcano cloud frontends deploy --name clanker2clanker --path .
+```
 
 ## Roadmap
 
