@@ -46,7 +46,7 @@ body {
   min-height: 100vh;
   background: var(--void);
   color: var(--text);
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 15px;
   line-height: 1.55;
 }
