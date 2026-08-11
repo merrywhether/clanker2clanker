@@ -28,7 +28,9 @@ export default function Home() {
             <div className="panel-body">
               <p className="prose">
                 Point your service at the well-known route on this domain and it will discover an
-                agent that is not there. Every request returns a different card.
+                agent that is not there. Every request returns a different card, unless the options
+                above say otherwise — send them as the <code>Authorization</code> header, or as a
+                query string when fetching by hand.
               </p>
               <ul className="path-list">
                 <li>

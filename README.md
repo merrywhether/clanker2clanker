@@ -19,6 +19,34 @@ Both well-known routes answer `200` with `application/json` and `Cache-Control: 
 request returns a different card. The seed that produced a card comes back in the `X-Card-Seed`
 response header.
 
+## Options
+
+The landing page keeps its options in the query string, and the well-known routes read the same
+encoded string from the `Authorization` header — so the controls on the page produce the header you
+need, and the two can't drift apart.
+
+```sh
+curl -H 'Authorization: Bearer seed=234&version=auto&skills=3' https://…/.well-known/agent-card.json
+curl 'https://…/.well-known/agent-card.json?seed=234&version=auto&skills=3'
+```
+
+| Option | Effect |
+|---|---|
+| `seed` | Reproduces a card exactly. Omit it for a new one every request. |
+| `version` | `auto` stamps the fetch time into the patch segment; anything else is used verbatim. |
+| `name`, `description`, `documentationUrl`, `iconUrl` | Set outright. |
+| `skills`, `interfaces` | Fix the counts instead of leaving them to chance. |
+| `extras` | Add the non-spec vendor keys real cards carry. |
+| `legacy` | Publish only at the pre-1.0 path, so the primary one 404s. |
+
+`seed` and `version` combine into four useful behaviors: a seed alone repeats one card exactly,
+`seed` + `version=auto` holds the card still while its version climbs, no seed at all changes
+everything each request, and a literal version pins whatever you need pinned.
+
+An option that would produce an unimportable card — a version range, say — is ignored rather than
+rejected, so the endpoint always answers with a usable card. The `X-Card-Config` response header
+echoes what was actually applied.
+
 ## What the generator guarantees
 
 The cards are random, but they are always importable. Every card:
@@ -58,7 +86,4 @@ volcano cloud frontends deploy --name clanker2clanker --path .
 
 ## Roadmap
 
-- Generation knobs: a seed for repeatability, skill and interface counts, optional extra
-  non-spec attributes
 - Cards targeting the older A2A versions at `/.well-known/agent.json`
-- The same knobs over an `Authorization` header, for callers that can only reach the well-known URI

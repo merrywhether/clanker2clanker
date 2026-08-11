@@ -175,6 +175,15 @@ export const MIME_TYPES = [
   'image/png',
 ] as const
 
+/** Names for the non-spec `resources` collection some real cards carry. */
+export const RESOURCE_NAMES = [
+  'Routing table',
+  'Tariff schedule',
+  'Escalation matrix',
+  'Retention policy',
+  'Service catalog',
+] as const
+
 export const EXTENSION_URIS = [
   'https://a2a.example/extensions/long-running-tasks/v1',
   'https://a2a.example/extensions/structured-output/v1',
