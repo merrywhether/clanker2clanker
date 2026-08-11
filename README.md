@@ -11,13 +11,13 @@ same saved JSON file.
 
 | Route | What it does |
 |---|---|
-| `/` | Landing page. Generates a card in the browser, with copy and regenerate. |
+| `/` | Landing page. Generates a card in the browser, with copy, regenerate, and the options below. |
 | `/.well-known/agent-card.json` | A freshly generated card. |
 | `/.well-known/agent.json` | The same, at the pre-1.0 location. |
 
 Both well-known routes answer `200` with `application/json` and `Cache-Control: no-store`, and every
-request returns a different card. The seed that produced a card comes back in the `X-Card-Seed`
-response header.
+request returns a different card. The seed that produced a card comes back in the `X-Card-Config`
+response header, along with any other options that were applied.
 
 ## Options
 
