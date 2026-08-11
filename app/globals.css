@@ -204,7 +204,7 @@ main {
 
 .card-json {
   margin: 0;
-  max-height: 60vh;
+  max-height: 30vh;
   overflow: auto;
   font-size: 13px;
   line-height: 1.5;
