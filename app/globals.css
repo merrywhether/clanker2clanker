@@ -59,21 +59,33 @@ body {
   opacity: 0.4;
 }
 
+/* The whole page is one viewport: the copy button must never be scrolled to. Everything but the
+   card body is sized by its content, and the card body absorbs whatever height is left. */
 main {
   position: relative;
   z-index: 1;
-  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 64px 24px 96px;
+  padding: 28px 28px 20px;
+  gap: 20px;
 }
 
 .masthead {
-  margin-bottom: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, var(--cyan), var(--magenta) 60%, transparent) 1;
 }
 
 .wordmark {
   margin: 0;
-  font-size: clamp(32px, 7vw, 60px);
+  font-size: clamp(26px, 3.2vw, 40px);
   font-weight: 700;
   letter-spacing: -0.03em;
   color: #fff;
@@ -91,16 +103,45 @@ main {
 }
 
 .tagline {
-  margin: 12px 0 0;
-  max-width: 62ch;
+  flex: 1 1 40ch;
+  margin: 0;
+  max-width: 80ch;
+  font-size: 13px;
   color: var(--muted);
 }
 
-.rule {
-  height: 1px;
-  margin: 20px 0 0;
-  background: linear-gradient(90deg, var(--cyan), var(--magenta) 60%, transparent);
-  opacity: 0.7;
+/*  card    options
+    card    options
+    fetch   options
+    The card row takes the slack; options runs the full height beside it. */
+.console {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-rows: minmax(260px, 1fr) auto;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+}
+
+.panel-options {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Shorter viewports scroll the options rather than pushing the card out of view. */
+.panel-options > .edge-inner {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.panel-fetch {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 /* A 1px neon edge that follows the cut corners: the child sits 1px inside its parent and the
@@ -118,23 +159,44 @@ main {
   width: 100%;
 }
 
-.panel {
-  margin-bottom: 28px;
+/* The card panel is a flex column all the way down to the <pre>, so the JSON scrolls inside the
+   panel instead of pushing the page taller. */
+.panel-fill,
+.panel-fill > .edge-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.panel-body-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
 }
 
 .panel-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px 16px;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--edge);
   background: var(--panel-raised);
 }
 
+/* Only the head's text wraps: the buttons keep the top-right corner at every width. */
+.panel-head-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 16px;
+  flex: 1;
+  min-width: 0;
+}
+
 .panel-title {
   margin: 0;
+  white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.18em;
@@ -149,6 +211,8 @@ main {
 .actions {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .btn {
@@ -204,8 +268,8 @@ main {
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
 }
 
 .field {
@@ -280,8 +344,8 @@ main {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 24px;
-  padding-top: 18px;
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--edge);
 }
 
@@ -318,8 +382,9 @@ main {
 }
 
 .card-json {
+  flex: 1;
+  min-height: 0;
   margin: 0;
-  max-height: 30vh;
   overflow: auto;
   font-size: 13px;
   line-height: 1.5;
@@ -342,6 +407,8 @@ main {
 }
 
 .seed {
+  margin: 0;
+  white-space: nowrap;
   color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -354,20 +421,17 @@ main {
 
 .prose {
   margin: 0;
+  font-size: 12px;
   color: var(--muted);
 }
 
-.prose + .prose {
-  margin-top: 12px;
-}
-
 .path-list {
-  margin: 16px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px 28px;
 }
 
 .path-list a {
@@ -385,13 +449,55 @@ main {
 }
 
 footer {
-  position: relative;
-  z-index: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 24px 48px;
   color: var(--muted);
   font-size: 12px;
+}
+
+/* Too narrow for a side column: stack, card first, and let the page scroll again. */
+@media (max-width: 1000px) {
+  main {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .console {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .panel-options,
+  .panel-fetch {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .panel-options > .edge-inner {
+    overflow: visible;
+  }
+
+  /* Stacked, the card is a proof that something generated rather than something to read — keep it
+     short so the options stay in reach. */
+  .card-json {
+    max-height: 20vh;
+    min-height: 120px;
+  }
+}
+
+/* Narrower than the seed line and the buttons side by side: the buttons take their own row rather
+   than squeezing the head text into a column. */
+@media (max-width: 600px) {
+  .panel-head {
+    flex-wrap: wrap;
+  }
+
+  .panel-head-main {
+    flex-basis: 100%;
+  }
+
+  /* On their own row the buttons line up with the text above them, not the far edge. */
+  .actions {
+    margin-left: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

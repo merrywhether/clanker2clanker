@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   AUTO_VERSION,
@@ -18,7 +18,8 @@ interface CardState {
   seed: string
 }
 
-export function CardConsole() {
+/** `children` take the row under the card, inside the console grid. */
+export function CardConsole({ children }: { children?: ReactNode }) {
   const [config, setConfig] = useState<CardConfig | null>(null)
   const [card, setCard] = useState<CardState | null>(null)
   const [copied, setCopied] = useState<'card' | 'header' | null>(null)
@@ -81,8 +82,50 @@ export function CardConsole() {
   const headerValue = `Bearer ${encoded}`
 
   return (
-    <>
-      <section className="panel edge">
+    <div className="console">
+      <section className="panel edge panel-fill">
+        <div className="edge-inner">
+          <header className="panel-head">
+            <div className="panel-head-main">
+              <h2 className="panel-title">Agent card</h2>
+              {card && (
+                <p className="seed">
+                  seed <b>{card.seed}</b>
+                  {!config?.seed && (
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => update({ seed: card.seed })}
+                    >
+                      pin it
+                    </button>
+                  )}
+                </p>
+              )}
+            </div>
+            <div className="actions">
+              <button type="button" className="btn" onClick={regenerate}>
+                Regenerate
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => card && copy('card', card.json)}
+                disabled={!card}
+              >
+                {copied === 'card' ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          </header>
+          <div className="panel-body panel-body-fill">
+            <pre className="card-json">
+              {card ? card.json : <span className="placeholder">Generating…</span>}
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel edge panel-options">
         <div className="edge-inner">
           <header className="panel-head">
             <h2 className="panel-title">Options</h2>
@@ -198,46 +241,8 @@ export function CardConsole() {
         </div>
       </section>
 
-      <section className="panel edge">
-        <div className="edge-inner">
-          <header className="panel-head">
-            <h2 className="panel-title">Agent card</h2>
-            <div className="actions">
-              <button type="button" className="btn" onClick={regenerate}>
-                Regenerate
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => card && copy('card', card.json)}
-                disabled={!card}
-              >
-                {copied === 'card' ? 'Copied' : 'Copy'}
-              </button>
-            </div>
-          </header>
-          <div className="panel-body">
-            <pre className="card-json">
-              {card ? card.json : <span className="placeholder">Generating…</span>}
-            </pre>
-            {card && (
-              <p className="seed">
-                seed <b>{card.seed}</b>
-                {!config?.seed && (
-                  <button
-                    type="button"
-                    className="link-button"
-                    onClick={() => update({ seed: card.seed })}
-                  >
-                    pin it
-                  </button>
-                )}
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
-    </>
+      {children}
+    </div>
   )
 }
 
