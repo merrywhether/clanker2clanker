@@ -392,28 +392,39 @@ main {
    it travels along the panel head, and whatever overshoots the top is allowed to clip. */
 .burst {
   position: absolute;
-  inset: -26px -105px;
+  inset: -14px -58px;
   z-index: -1;
   pointer-events: none;
-  border-radius: 30px;
+  border-radius: 20px;
   background: radial-gradient(
     closest-side,
     rgba(255, 252, 228, 0.95),
     rgba(255, 225, 74, 0.72) 55%,
     rgba(201, 255, 61, 0.5) 100%
   );
-  filter: blur(17px);
-  animation: burst 700ms cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
+  filter: blur(14px);
+  /* Two animations over one span, so the light can dump most of its brightness in the first
+     fraction of the spread and trail off, rather than fading in step with the motion. */
+  animation:
+    burst-spread 700ms cubic-bezier(0.16, 0.9, 0.3, 1) forwards,
+    burst-fade 700ms cubic-bezier(0, 0.85, 0.25, 1) forwards;
 }
 
-@keyframes burst {
+@keyframes burst-spread {
+  from {
+    transform: scale(0.9, 0.82);
+  }
+  to {
+    transform: scale(1.75, 1.3);
+  }
+}
+
+@keyframes burst-fade {
   from {
     opacity: 1;
-    transform: scale(0.92, 0.8);
   }
   to {
     opacity: 0;
-    transform: scale(2.1, 1.5);
   }
 }
 
