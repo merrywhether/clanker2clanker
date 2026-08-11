@@ -13,6 +13,8 @@ import {
   serializeConfig,
 } from '@/lib/agent-card'
 
+import { CardJson } from './card-json'
+
 interface CardState {
   json: string
   seed: string
@@ -23,6 +25,9 @@ export function CardConsole({ children }: { children?: ReactNode }) {
   const [config, setConfig] = useState<CardConfig | null>(null)
   const [card, setCard] = useState<CardState | null>(null)
   const [copied, setCopied] = useState<'card' | 'header' | null>(null)
+  // Bumped on every press, including a repeat press. The burst elements are keyed on it, so each
+  // one is a fresh node whose animation starts at full brightness instead of being ignored.
+  const [burst, setBurst] = useState(0)
 
   useEffect(() => {
     setConfig(parseConfig(new URLSearchParams(window.location.search)))
@@ -57,12 +62,13 @@ export function CardConsole({ children }: { children?: ReactNode }) {
     }
     const timer = setTimeout(() => setCopied(null), 2000)
     return () => clearTimeout(timer)
-  }, [copied])
+  }, [copied, burst])
 
   const copy = async (what: 'card' | 'header', text: string) => {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(what)
+      setBurst((n) => n + 1)
     } catch {
       setCopied(null)
     }
@@ -83,6 +89,11 @@ export function CardConsole({ children }: { children?: ReactNode }) {
 
   return (
     <div className="console">
+      <p className="sr-only" role="status">
+        {copied ? 'Copied to the clipboard.' : ''}
+      </p>
+      {/* The panel clips its own burst, so the wash that reaches the rest of the page is separate. */}
+      {copied && <span key={burst} className="flash-page" aria-hidden="true" />}
       <section className="panel edge panel-fill">
         <div className="edge-inner">
           <header className="panel-head">
@@ -107,19 +118,22 @@ export function CardConsole({ children }: { children?: ReactNode }) {
               <button type="button" className="btn" onClick={regenerate}>
                 Regenerate
               </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => card && copy('card', card.json)}
-                disabled={!card}
-              >
-                {copied === 'card' ? 'Copied' : 'Copy'}
-              </button>
+              <span className="burst-slot">
+                <button
+                  type="button"
+                  className={copied === 'card' ? 'btn btn-primary btn-copied' : 'btn btn-primary'}
+                  onClick={() => card && copy('card', card.json)}
+                  disabled={!card}
+                >
+                  Copy
+                </button>
+                {copied === 'card' && <span key={burst} className="burst" aria-hidden="true" />}
+              </span>
             </div>
           </header>
           <div className="panel-body panel-body-fill">
             <pre className="card-json">
-              {card ? card.json : <span className="placeholder">Generating…</span>}
+              {card ? <CardJson json={card.json} /> : <span className="placeholder">Generating…</span>}
             </pre>
           </div>
         </div>
@@ -134,25 +148,29 @@ export function CardConsole({ children }: { children?: ReactNode }) {
             <div className="controls">
               <label className="field">
                 <span className="field-label">Seed</span>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="random"
-                  value={config?.seed ?? ''}
-                  onChange={(e) => update({ seed: e.target.value.trim() || undefined })}
-                />
+                <span className="input-edge">
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="random"
+                    value={config?.seed ?? ''}
+                    onChange={(e) => update({ seed: e.target.value.trim() || undefined })}
+                  />
+                </span>
                 <span className="field-hint">Pin it to get the same card every time.</span>
               </label>
 
               <label className="field">
                 <span className="field-label">Version</span>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="random"
-                  value={config?.overrides.version ?? ''}
-                  onChange={(e) => setOverride('version', e.target.value.trim())}
-                />
+                <span className="input-edge">
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="random"
+                    value={config?.overrides.version ?? ''}
+                    onChange={(e) => setOverride('version', e.target.value.trim())}
+                  />
+                </span>
                 <span className={versionIgnored ? 'field-hint warn' : 'field-hint'}>
                   {versionIgnored
                     ? 'Ignored — a range or alias is not an exact version.'
@@ -162,40 +180,46 @@ export function CardConsole({ children }: { children?: ReactNode }) {
 
               <label className="field">
                 <span className="field-label">Name</span>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="random"
-                  value={config?.overrides.name ?? ''}
-                  onChange={(e) => setOverride('name', e.target.value)}
-                />
+                <span className="input-edge">
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="random"
+                    value={config?.overrides.name ?? ''}
+                    onChange={(e) => setOverride('name', e.target.value)}
+                  />
+                </span>
                 <span className="field-hint">Also description, documentationUrl, iconUrl.</span>
               </label>
 
               <label className="field field-narrow">
                 <span className="field-label">Skills</span>
-                <input
-                  type="number"
-                  className="input"
-                  placeholder="random"
-                  min={SKILLS_RANGE[0]}
-                  max={SKILLS_RANGE[1]}
-                  value={config?.skills ?? ''}
-                  onChange={(e) => update({ skills: toCount(e.target.value) })}
-                />
+                <span className="input-edge">
+                  <input
+                    type="number"
+                    className="input"
+                    placeholder="random"
+                    min={SKILLS_RANGE[0]}
+                    max={SKILLS_RANGE[1]}
+                    value={config?.skills ?? ''}
+                    onChange={(e) => update({ skills: toCount(e.target.value) })}
+                  />
+                </span>
               </label>
 
               <label className="field field-narrow">
                 <span className="field-label">Interfaces</span>
-                <input
-                  type="number"
-                  className="input"
-                  placeholder="random"
-                  min={INTERFACES_RANGE[0]}
-                  max={INTERFACES_RANGE[1]}
-                  value={config?.interfaces ?? ''}
-                  onChange={(e) => update({ interfaces: toCount(e.target.value) })}
-                />
+                <span className="input-edge">
+                  <input
+                    type="number"
+                    className="input"
+                    placeholder="random"
+                    min={INTERFACES_RANGE[0]}
+                    max={INTERFACES_RANGE[1]}
+                    value={config?.interfaces ?? ''}
+                    onChange={(e) => update({ interfaces: toCount(e.target.value) })}
+                  />
+                </span>
               </label>
 
               <div className="field field-toggles">
@@ -223,13 +247,18 @@ export function CardConsole({ children }: { children?: ReactNode }) {
               {encoded ? (
                 <div className="header-row">
                   <code className="header-value">Authorization: {headerValue}</code>
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => copy('header', headerValue)}
-                  >
-                    {copied === 'header' ? 'Copied' : 'Copy'}
-                  </button>
+                  <span className="burst-slot">
+                    <button
+                      type="button"
+                      className={copied === 'header' ? 'btn btn-copied' : 'btn'}
+                      onClick={() => copy('header', headerValue)}
+                    >
+                      Copy
+                    </button>
+                    {copied === 'header' && (
+                      <span key={burst} className="burst" aria-hidden="true" />
+                    )}
+                  </span>
                 </div>
               ) : (
                 <p className="field-hint">

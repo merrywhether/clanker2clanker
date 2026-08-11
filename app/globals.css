@@ -6,10 +6,24 @@
   --cyan: #22e8ff;
   --magenta: #ff2bd6;
   --lime: #c9ff3d;
+  --amber: #ffb347;
   --text: #d7f2ff;
   --muted: #6b8798;
+  --dim: #3f5a6b;
   --cut: 12px;
-  --cut-path: polygon(
+}
+
+/* A custom property substitutes its own var()s where it is declared, so hoisting this polygon into
+   a --cut-path variable would bake in the root's --cut and ignore every per-element override. It
+   has to be written where it is used. */
+.edge,
+.edge > .edge-inner,
+.input-edge,
+.btn,
+.burst::before,
+.input,
+.header-value {
+  clip-path: polygon(
     var(--cut) 0,
     100% 0,
     100% calc(100% - var(--cut)),
@@ -52,11 +66,42 @@ body {
     radial-gradient(ellipse 60% 50% at 90% 110%, rgba(255, 43, 214, 0.14), transparent 70%),
     repeating-linear-gradient(0deg, rgba(34, 232, 255, 0.045) 0 1px, transparent 1px 64px),
     repeating-linear-gradient(90deg, rgba(34, 232, 255, 0.045) 0 1px, transparent 1px 64px);
+  /* Long and shallow: the grid should feel alive at the edge of notice, not pulse at you. */
+  animation: breathe 11s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.62;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .scanlines {
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px);
   opacity: 0.4;
+}
+
+/* The refresh band of a CRT, crawling down the whole page. */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  height: 140px;
+  background: linear-gradient(180deg, transparent, rgba(34, 232, 255, 0.055), transparent);
+  animation: sweep 9s linear infinite;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateY(-140px);
+  }
+  to {
+    transform: translateY(100vh);
+  }
 }
 
 /* The whole page is one viewport: the copy button must never be scrolled to. Everything but the
@@ -100,6 +145,29 @@ main {
   text-shadow:
     0 0 10px rgba(255, 43, 214, 0.9),
     0 0 32px rgba(255, 43, 214, 0.5);
+}
+
+/* A tube that never quite settles. The dips are short and far apart so it reads as a bad
+   connection rather than a strobe. */
+.wordmark {
+  animation: flicker 7s steps(1, end) infinite;
+}
+
+@keyframes flicker {
+  0%,
+  41%,
+  43%,
+  44.5%,
+  71%,
+  72.5%,
+  100% {
+    opacity: 1;
+  }
+  42%,
+  43.5%,
+  71.8% {
+    opacity: 0.72;
+  }
 }
 
 .tagline {
@@ -147,13 +215,11 @@ main {
 /* A 1px neon edge that follows the cut corners: the child sits 1px inside its parent and the
    parent's gradient shows through as the outline. A border would be clipped off the diagonals. */
 .edge {
-  clip-path: var(--cut-path);
   background: linear-gradient(135deg, var(--cyan), var(--magenta));
   padding: 1px;
 }
 
 .edge > .edge-inner {
-  clip-path: var(--cut-path);
   background: var(--panel);
   display: block;
   width: 100%;
@@ -180,8 +246,15 @@ main {
   gap: 8px 16px;
   align-items: center;
   padding: 12px 20px;
-  border-bottom: 1px solid var(--edge);
-  background: var(--panel-raised);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, rgba(34, 232, 255, 0.55), rgba(255, 43, 214, 0.35) 70%, transparent) 1;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(34, 232, 255, 0.03) 0 1px,
+      transparent 1px 7px
+    ),
+    var(--panel-raised);
 }
 
 /* Only the head's text wraps: the buttons keep the top-right corner at every width. */
@@ -195,6 +268,9 @@ main {
 }
 
 .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin: 0;
   white-space: nowrap;
   font-size: 13px;
@@ -202,6 +278,28 @@ main {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--cyan);
+  text-shadow: 0 0 12px rgba(34, 232, 255, 0.6);
+}
+
+/* Every panel carries a channel indicator, on the theory that a thing this fake should at least
+   look powered. */
+.panel-title::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+  animation: blip 2.4s ease-in-out infinite;
+}
+
+@keyframes blip {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
 
 .panel-body {
@@ -217,7 +315,6 @@ main {
 
 .btn {
   --cut: 8px;
-  clip-path: var(--cut-path);
   display: inline-block;
   padding: 8px 16px;
   border: 0;
@@ -252,18 +349,128 @@ main {
   outline-offset: 2px;
 }
 
+/* clip-path cuts a box-shadow off, so the bloom has to come from a filter. */
 .btn-primary {
   color: var(--void);
   background: var(--cyan);
   font-weight: 700;
+  filter: drop-shadow(0 0 8px rgba(34, 232, 255, 0.55));
 }
 
 .btn-primary:hover {
   background: #6ff2ff;
+  filter: drop-shadow(0 0 14px rgba(34, 232, 255, 0.85));
 }
 
 .btn-primary:active {
   background: #9df6ff;
+}
+
+/* The confirmation is the flash, not a word: swapping the label would reflow the button row.
+   The burst overlay does the animating, so a repeat press restarts at full brightness. */
+.burst-slot {
+  position: relative;
+  display: inline-flex;
+}
+
+.burst {
+  position: absolute;
+  inset: -44px;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 252, 228, 0.9),
+    rgba(201, 255, 61, 0.45) 45%,
+    transparent 74%
+  );
+  animation: burst 700ms cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
+}
+
+/* Back to exactly the button box, to white it out before the glow blows past the edges. */
+.burst::before {
+  content: '';
+  --cut: 8px;
+  position: absolute;
+  inset: 44px;
+  animation: burst-core 620ms ease-out forwards;
+}
+
+@keyframes burst {
+  from {
+    opacity: 1;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes burst-core {
+  0% {
+    background: #fffce4;
+    opacity: 1;
+  }
+  28% {
+    background: var(--lime);
+    opacity: 0.92;
+  }
+  100% {
+    background: var(--lime);
+    opacity: 0;
+  }
+}
+
+.flash-page {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 62% 18%, rgba(201, 255, 61, 0.14), transparent 62%);
+  animation: page-wash 460ms ease-out forwards;
+}
+
+@keyframes page-wash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Extended-range linear sRGB paints above SDR white where the display has the headroom for it.
+   rec2100-hlg and -pq are not accepted by any engine here, so this is the available route. */
+@media (dynamic-range: high) {
+  .burst,
+  .burst::before {
+    dynamic-range-limit: no-limit;
+  }
+
+  .burst {
+    background: radial-gradient(
+      closest-side,
+      color(srgb-linear 5 4.7 3),
+      color(srgb-linear 2.4 3.4 0.5) 45%,
+      transparent 74%
+    );
+  }
+
+  @keyframes burst-core {
+    0% {
+      background: color(srgb-linear 6 5.6 3.6);
+      opacity: 1;
+    }
+    28% {
+      background: color(srgb-linear 2.4 3.4 0.5);
+      opacity: 0.92;
+    }
+    100% {
+      background: var(--lime);
+      opacity: 0;
+    }
+  }
 }
 
 .controls {
@@ -304,12 +511,30 @@ main {
   color: var(--magenta);
 }
 
+/* An outline is not clipped by clip-path, so a focus ring drawn that way squares off the cut
+   corners. The input wears the same 1px-parent treatment the panels use, which follows the cut. */
+.input-edge {
+  --cut: 9px;
+  display: block;
+  padding: 1px;
+  background: var(--edge);
+  transition: background 0.15s ease;
+}
+
+.input-edge:has(:focus-visible) {
+  background: var(--cyan);
+  filter: drop-shadow(0 0 7px rgba(34, 232, 255, 0.6));
+}
+
 .input {
   --cut: 8px;
-  clip-path: var(--cut-path);
+  display: block;
+  width: 100%;
   padding: 8px 10px;
   border: 0;
-  background: rgba(34, 232, 255, 0.08);
+  /* Opaque, or the ring behind it shows through the whole field instead of only its 1px margin.
+     These are the old translucent cyan washes flattened onto --panel. */
+  background: #0c2029;
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -321,8 +546,8 @@ main {
 }
 
 .input:focus-visible {
-  outline: 1px solid var(--cyan);
-  outline-offset: -1px;
+  outline: none;
+  background: #0d2d37;
 }
 
 .toggle {
@@ -357,7 +582,6 @@ main {
 
 .header-value {
   --cut: 8px;
-  clip-path: var(--cut-path);
   flex: 1;
   min-width: 0;
   padding: 8px 12px;
@@ -381,6 +605,7 @@ main {
   cursor: pointer;
 }
 
+/* Punctuation inherits this dim color, so the tokens below are what the eye lands on. */
 .card-json {
   flex: 1;
   min-height: 0;
@@ -388,9 +613,25 @@ main {
   overflow: auto;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text);
+  color: var(--dim);
   white-space: pre;
   tab-size: 2;
+}
+
+.tok-key {
+  color: var(--cyan);
+}
+
+.tok-string {
+  color: var(--text);
+}
+
+.tok-number {
+  color: var(--magenta);
+}
+
+.tok-literal {
+  color: var(--amber);
 }
 
 .card-json::-webkit-scrollbar {
@@ -399,11 +640,34 @@ main {
 }
 
 .card-json::-webkit-scrollbar-thumb {
-  background: var(--edge);
+  background: rgba(34, 232, 255, 0.35);
+}
+
+.card-json::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
+}
+
+/* The page exists to be copied off, so a hand-drag selection should look like part of the set. */
+.card-json::selection,
+.card-json ::selection {
+  background: rgba(255, 43, 214, 0.35);
+  color: #fff;
 }
 
 .placeholder {
   color: var(--muted);
+}
+
+/* The copy buttons confirm with a flash, which a screen reader cannot see. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .seed {
@@ -503,5 +767,18 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+    animation: none !important;
+  }
+
+  .scanlines::after,
+  .burst,
+  .flash-page {
+    display: none;
+  }
+
+  /* With the burst suppressed, the button itself has to carry the confirmation. */
+  .btn-copied {
+    color: var(--void);
+    background: var(--lime);
   }
 }
