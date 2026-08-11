@@ -114,10 +114,9 @@ export function CardConsole({ children }: { children?: ReactNode }) {
                 </p>
               )}
             </div>
+            {/* Copy sits inboard of Regenerate so its burst has panel to spread into rather than
+                the right edge to collide with. */}
             <div className="actions">
-              <button type="button" className="btn" onClick={regenerate}>
-                Regenerate
-              </button>
               <span className="burst-slot">
                 <button
                   type="button"
@@ -129,6 +128,9 @@ export function CardConsole({ children }: { children?: ReactNode }) {
                 </button>
                 {copied === 'card' && <span key={burst} className="burst" aria-hidden="true" />}
               </span>
+              <button type="button" className="btn" onClick={regenerate}>
+                Regenerate
+              </button>
             </div>
           </header>
           <div className="panel-body panel-body-fill">
