@@ -64,11 +64,12 @@ export function CardConsole({ children }: { children?: ReactNode }) {
     return () => clearTimeout(timer)
   }, [copied, burst])
 
-  const copy = async (what: 'card' | 'header', text: string) => {
+  const copy = async (what: 'card' | 'header', text: string, button: HTMLButtonElement) => {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(what)
       setBurst((n) => n + 1)
+      flash(button)
     } catch {
       setCopied(null)
     }
@@ -121,7 +122,7 @@ export function CardConsole({ children }: { children?: ReactNode }) {
                 <button
                   type="button"
                   className={copied === 'card' ? 'btn btn-primary btn-copied' : 'btn btn-primary'}
-                  onClick={() => card && copy('card', card.json)}
+                  onClick={(e) => card && copy('card', card.json, e.currentTarget)}
                   disabled={!card}
                 >
                   Copy
@@ -253,7 +254,7 @@ export function CardConsole({ children }: { children?: ReactNode }) {
                     <button
                       type="button"
                       className={copied === 'header' ? 'btn btn-copied' : 'btn'}
-                      onClick={() => copy('header', headerValue)}
+                      onClick={(e) => copy('header', headerValue, e.currentTarget)}
                     >
                       Copy
                     </button>
@@ -274,6 +275,30 @@ export function CardConsole({ children }: { children?: ReactNode }) {
 
       {children}
     </div>
+  )
+}
+
+/**
+ * The label has to stay legible through the flash, so this runs on the button rather than under an
+ * overlay. It is scripted rather than a class because a CSS animation on an element that is already
+ * mid-flash does not restart, which would swallow the feedback on a repeat press.
+ */
+function flash(button: HTMLButtonElement) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
+
+  // Cancel first, or the resting colors are read off an animation still in flight.
+  button.getAnimations().forEach((animation) => animation.cancel())
+  const resting = getComputedStyle(button)
+
+  button.animate(
+    [
+      { backgroundColor: '#ffe14a', color: '#fff' },
+      { backgroundColor: '#c9ff3d', color: '#fff', offset: 0.35 },
+      { backgroundColor: resting.backgroundColor, color: resting.color },
+    ],
+    { duration: 950, easing: 'ease-out' }
   )
 }
 

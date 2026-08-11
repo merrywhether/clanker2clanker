@@ -20,7 +20,6 @@
 .edge > .edge-inner,
 .input-edge,
 .btn,
-.burst::before,
 .input,
 .header-value {
   clip-path: polygon(
@@ -176,6 +175,17 @@ main {
   max-width: 80ch;
   font-size: 13px;
   color: var(--muted);
+}
+
+.tagline a {
+  color: var(--cyan);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(34, 232, 255, 0.45);
+}
+
+.tagline a:hover {
+  border-bottom-style: solid;
+  text-shadow: 0 0 10px rgba(34, 232, 255, 0.6);
 }
 
 /*  card    options
@@ -366,69 +376,44 @@ main {
   background: #9df6ff;
 }
 
-/* The confirmation is the flash, not a word: swapping the label would reflow the button row.
-   The burst overlay does the animating, so a repeat press restarts at full brightness. */
+/* The confirmation is the flash, not a word: swapping the label would reflow the button row. The
+   button's own colors are animated from script, so the label stays legible through it and a repeat
+   press restarts the ramp. This is only the bloom around it.
+
+   isolation, so the bloom can sit behind the button without falling behind the panel head too. */
 .burst-slot {
   position: relative;
   display: inline-flex;
+  isolation: isolate;
 }
 
-/* Sits on the button box. The core is a static child and the bloom is a separate scaling one —
-   scaling both together would stretch the core off the button it is supposed to be whiting out. */
+/* A blurred rounded rectangle rather than a gradient's ellipse: the radius keeps the shape
+   square-ish and the blur softens it, which a gradient alone cannot do. Wider than tall so most of
+   it travels along the panel head, and whatever overshoots the top is allowed to clip. */
 .burst {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.burst::before {
-  content: '';
-  --cut: 8px;
-  position: absolute;
-  inset: 0;
-  animation: burst-core 620ms ease-out forwards;
-}
-
-/* Wide and shallow: a panel head is only a dozen pixels taller than the button, so the glow takes
-   its room sideways, where there is some, instead of being clipped top and bottom. */
-.burst::after {
-  content: '';
-  position: absolute;
-  inset: -9px -115px;
+  inset: -26px -105px;
   z-index: -1;
+  pointer-events: none;
+  border-radius: 30px;
   background: radial-gradient(
     closest-side,
-    rgba(255, 252, 228, 0.9),
-    rgba(201, 255, 61, 0.45) 45%,
-    transparent 74%
+    rgba(255, 252, 228, 0.95),
+    rgba(255, 225, 74, 0.72) 55%,
+    rgba(201, 255, 61, 0.5) 100%
   );
+  filter: blur(17px);
   animation: burst 700ms cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
 }
 
 @keyframes burst {
   from {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(0.92, 0.8);
   }
   to {
     opacity: 0;
-    transform: scale(2.6, 1.35);
-  }
-}
-
-@keyframes burst-core {
-  0% {
-    background: #fffce4;
-    opacity: 1;
-  }
-  28% {
-    background: var(--lime);
-    opacity: 0.92;
-  }
-  100% {
-    background: var(--lime);
-    opacity: 0;
+    transform: scale(2.1, 1.5);
   }
 }
 
@@ -453,33 +438,14 @@ main {
 /* Extended-range linear sRGB paints above SDR white where the display has the headroom for it.
    rec2100-hlg and -pq are not accepted by any engine here, so this is the available route. */
 @media (dynamic-range: high) {
-  .burst::before,
-  .burst::after {
+  .burst {
     dynamic-range-limit: no-limit;
-  }
-
-  .burst::after {
     background: radial-gradient(
       closest-side,
-      color(srgb-linear 5 4.7 3),
-      color(srgb-linear 2.4 3.4 0.5) 45%,
-      transparent 74%
+      color(srgb-linear 6 5.6 3.4),
+      color(srgb-linear 4 3.4 0.6) 55%,
+      color(srgb-linear 2.2 3.2 0.4) 100%
     );
-  }
-
-  @keyframes burst-core {
-    0% {
-      background: color(srgb-linear 6 5.6 3.6);
-      opacity: 1;
-    }
-    28% {
-      background: color(srgb-linear 2.4 3.4 0.5);
-      opacity: 0.92;
-    }
-    100% {
-      background: var(--lime);
-      opacity: 0;
-    }
   }
 }
 

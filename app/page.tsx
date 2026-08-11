@@ -3,6 +3,9 @@ import { WELL_KNOWN_PATHS } from '@/lib/well-known'
 
 const [PRIMARY_PATH, LEGACY_PATH] = WELL_KNOWN_PATHS
 
+/** Pinned to the version the generator emits, not `latest`, which will move off it. */
+const SPEC_URL = 'https://a2a-protocol.org/v1.0.0/specification/#8-agent-discovery-the-agent-card'
+
 export default function Home() {
   return (
     <main>
@@ -11,8 +14,11 @@ export default function Home() {
           clanker<span className="split">2</span>clanker
         </h1>
         <p className="tagline">
-          An agent that exists only on paper. Generates a random A2A v1.0.0 agent card, so you can
-          test whatever consumes them without inventing one by hand.
+          An agent that exists only on paper. Generates a random{' '}
+          <a href={SPEC_URL} target="_blank" rel="noreferrer">
+            A2A v1.0.0 agent card
+          </a>
+          , so you can test whatever consumes them without inventing one by hand.
         </p>
       </header>
 
