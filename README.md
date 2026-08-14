@@ -74,8 +74,8 @@ npm run typecheck
 The generator in `lib/agent-card/` is plain TypeScript with no framework imports, and runs unchanged
 in the browser and on the server.
 
-`npm run og` regenerates `public/og.png`, the link-preview image. It is committed, so this only
-needs running when the masthead changes.
+`npm run images` regenerates `public/og.png` (the link preview) and `app/icon.png` (the favicon).
+Both are committed, so this only needs running when the masthead changes.
 
 **`SITE_URL` is required for a production build.** A link preview needs an absolute image URL, and
 the page is prerendered, so the origin has to be known at build time. Set it to the public origin

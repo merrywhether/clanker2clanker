@@ -12,7 +12,7 @@ import './globals.css'
 const TITLE = 'clanker2clanker'
 const DESCRIPTION = 'Randomly generated A2A agent cards, on a page and at the well-known URI.'
 
-/** Prerendered by `npm run og`, not by the build. */
+/** Prerendered by `npm run images`, not by the build. */
 const OG_IMAGE = {
   url: '/og.png',
   width: 1200,
