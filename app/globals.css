@@ -210,13 +210,6 @@ main {
   min-height: 0;
 }
 
-/* Shorter viewports scroll the options rather than pushing the card out of view. */
-.panel-options > .edge-inner {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
-
 .panel-fetch {
   grid-column: 1;
   grid-row: 2;
@@ -249,6 +242,37 @@ main {
   flex: 1;
   min-height: 0;
   display: flex;
+}
+
+/* Shorter viewports scroll the options rather than pushing the card out of view. The scroll is on
+   the body alone, so the header string underneath it never leaves the panel. */
+.panel-options > .edge-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-options .panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* The rule spans the panel rather than the content, and is the head's gradient mirrored, so the
+   footer reads as part of the frame instead of as one more divider between controls. */
+.panel-foot {
+  flex-shrink: 0;
+  padding: 16px 20px 20px;
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(90deg, rgba(34, 232, 255, 0.55), rgba(255, 43, 214, 0.35) 70%, transparent) 1;
+}
+
+/* Tighter tracks than the options above, so status, delay and body share one row and the group
+   costs two rows rather than three. */
+.controls-group .controls {
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 14px 12px;
 }
 
 .panel-head {
@@ -520,8 +544,9 @@ main {
   padding: 8px 10px;
   border: 0;
   /* Opaque, or the ring behind it shows through the whole field instead of only its 1px margin.
-     These are the old translucent cyan washes flattened onto --panel. */
-  background: #0c2029;
+     These are the old translucent cyan washes flattened onto --panel. Set as a longhand because
+     the select draws its caret in this element's background-image. */
+  background-color: #0c2029;
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -534,7 +559,26 @@ main {
 
 .input:focus-visible {
   outline: none;
-  background: #0d2d37;
+  background-color: #0d2d37;
+}
+
+/* Two half-transparent gradients meeting at a point, so the caret needs no asset and inherits the
+   palette. The native control's own arrow is unstyleable and does not survive a dark panel. */
+.select {
+  appearance: none;
+  padding-right: 24px;
+  padding-left: 8px;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--cyan) 50%),
+    linear-gradient(135deg, var(--cyan) 50%, transparent 50%);
+  background-position: calc(100% - 15px) center, calc(100% - 10px) center;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.select option {
+  background: var(--panel-raised);
+  color: var(--text);
 }
 
 .toggle {
@@ -552,13 +596,39 @@ main {
   height: 15px;
 }
 
+/* A second bank of controls under its own rule, because these are the ones that stop the route
+   answering with a card and should not read as more of the same knobs. */
+.controls-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--edge);
+}
+
+.group-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.group-title {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--magenta);
+}
+
+/* A URL needs the whole row; the grid would otherwise give it one 150px track. */
+.field-wide {
+  grid-column: 1 / -1;
+}
+
 .header-box {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--edge);
 }
 
 .header-row {
@@ -722,7 +792,7 @@ footer {
     grid-row: auto;
   }
 
-  .panel-options > .edge-inner {
+  .panel-options .panel-body {
     overflow: visible;
   }
 

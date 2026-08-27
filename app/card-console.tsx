@@ -5,9 +5,13 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AUTO_VERSION,
   CardConfig,
+  DELAY_MAX_MS,
   INTERFACES_RANGE,
+  MALFORMED_KINDS,
+  MalformedKind,
   OverridableField,
   SKILLS_RANGE,
+  STATUS_RANGE,
   generateAgentCard,
   parseConfig,
   serializeConfig,
@@ -86,6 +90,7 @@ export function CardConsole({ children }: { children?: ReactNode }) {
     )
 
   const versionIgnored = Boolean(config?.overrides.version && !effectiveConfig.overrides.version)
+  const redirectIgnored = Boolean(config?.redirect && !effectiveConfig.redirect)
   const headerValue = `Bearer ${encoded}`
 
   return (
@@ -245,6 +250,99 @@ export function CardConsole({ children }: { children?: ReactNode }) {
               </div>
             </div>
 
+            <div className="controls-group">
+              <div className="group-head">
+                <span className="group-title">Make it fail</span>
+                <p className="field-hint">
+                  Only the well-known route can fail, the in-browser card is never affected.
+                  Failures are seeded too, so a broken response repeats exactly.
+                </p>
+              </div>
+              <div className="controls">
+                <label className="field field-narrow">
+                  <span className="field-label">Status</span>
+                  <span className="input-edge">
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="200"
+                      min={STATUS_RANGE[0]}
+                      max={STATUS_RANGE[1]}
+                      value={config?.status ?? ''}
+                      onChange={(e) => update({ status: toCount(e.target.value) })}
+                    />
+                  </span>
+                  <span className="field-hint">
+                    {STATUS_RANGE[0]}&ndash;{STATUS_RANGE[1]}.
+                  </span>
+                </label>
+
+                <label className="field field-narrow">
+                  <span className="field-label">Delay</span>
+                  <span className="input-edge">
+                    <input
+                      type="number"
+                      className="input"
+                      placeholder="0"
+                      min={0}
+                      max={DELAY_MAX_MS}
+                      value={config?.delay ?? ''}
+                      onChange={(e) => update({ delay: toCount(e.target.value) })}
+                    />
+                  </span>
+                  <span className="field-hint">Milliseconds, up to {DELAY_MAX_MS}.</span>
+                </label>
+
+                <label className="field">
+                  <span className="field-label">Body</span>
+                  <span className="input-edge">
+                    <select
+                      className="input select"
+                      value={config?.malformed ?? ''}
+                      onChange={(e) =>
+                        update({ malformed: (e.target.value || undefined) as MalformedKind })
+                      }
+                    >
+                      <option value="">Valid card</option>
+                      {MALFORMED_KINDS.map((kind) => (
+                        <option key={kind} value={kind}>
+                          {MALFORMED_LABELS[kind]}
+                        </option>
+                      ))}
+                    </select>
+                  </span>
+                  <span className="field-hint">
+                    {config?.malformed
+                      ? MALFORMED_HINTS[config.malformed]
+                      : 'The route answers with a card.'}
+                  </span>
+                </label>
+
+                <label className="field field-wide">
+                  <span className="field-label">Redirect to</span>
+                  <span className="input-edge">
+                    <input
+                      type="text"
+                      className="input"
+                      placeholder="https://elsewhere.example/agent-card.json"
+                      value={config?.redirect ?? ''}
+                      onChange={(e) => update({ redirect: e.target.value.trim() || undefined })}
+                    />
+                  </span>
+                  <span className={redirectIgnored ? 'field-hint warn' : 'field-hint'}>
+                    {redirectIgnored
+                      ? 'Ignored — not an absolute http(s) URL or a rooted path.'
+                      : 'Answers 302 unless Status names another 3xx.'}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Outside the scrolling body: the header string is the thing you came to copy, so it
+              stays put however far the controls above it run. */}
+          <div className="panel-foot">
             <div className="header-box">
               <span className="field-label">Send the same options to the well-known route</span>
               {encoded ? (
@@ -276,6 +374,24 @@ export function CardConsole({ children }: { children?: ReactNode }) {
       {children}
     </div>
   )
+}
+
+/**
+ * Short enough to survive the narrowest track the group lays out in, so the detail lives in the
+ * hint under the control instead of in a label that would be cut off.
+ */
+const MALFORMED_LABELS: Record<MalformedKind, string> = {
+  shape: 'Bad shape',
+  syntax: 'Truncated',
+  html: 'HTML page',
+  huge: 'Oversized',
+}
+
+const MALFORMED_HINTS: Record<MalformedKind, string> = {
+  shape: 'Valid JSON, with no card at the top level.',
+  syntax: 'Cut off mid-structure, so it will not parse.',
+  html: 'An HTML page, served at 200.',
+  huge: 'A card padded past any size limit.',
 }
 
 /**

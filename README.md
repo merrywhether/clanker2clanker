@@ -38,6 +38,7 @@ curl 'https://…/.well-known/agent-card.json?seed=234&version=auto&skills=3'
 | `skills`, `interfaces` | Fix the counts instead of leaving them to chance. |
 | `extras` | Add the non-spec vendor keys real cards carry. |
 | `legacy` | Publish only at the pre-1.0 path, so the primary one 404s. |
+| `status`, `redirect`, `malformed`, `delay` | Make the fetch fail. See below. |
 
 `seed` and `version` combine into four useful behaviors: a seed alone repeats one card exactly,
 `seed` + `version=auto` holds the card still while its version climbs, no seed at all changes
@@ -47,9 +48,46 @@ An option that would produce an unimportable card — a version range, say — i
 rejected, so the endpoint always answers with a usable card. The `X-Card-Config` response header
 echoes what was actually applied.
 
+## Making it fail
+
+A reader that fetches an agent card has more than one way to not get one, and most of them are
+awkward to reach on purpose — a bogus hostname only ever produces the same one. These options make
+the well-known routes fail on request, in the same encoded string as everything else.
+
+| Option | Effect |
+|---|---|
+| `status` | Answer with this code instead of `200`. `300`–`599`. A `401` also sends `WWW-Authenticate`, which the spec requires and some clients act on. |
+| `redirect` | Answer with a redirect to this location, absolute or rooted. `302` unless `status` names another `3xx`. |
+| `malformed` | Answer `200` with something that is not a usable card. |
+| `delay` | Hold the response open this many milliseconds first, up to `8000`. |
+
+```sh
+curl -H 'Authorization: Bearer status=403' https://…/.well-known/agent-card.json
+curl -H 'Authorization: Bearer redirect=https://elsewhere.example/agent-card.json&status=308' …
+curl -H 'Authorization: Bearer malformed=huge' …
+curl -H 'Authorization: Bearer delay=6000' …
+```
+
+`malformed` takes the kind of broken you want. A bare `malformed` means `shape`.
+
+| Kind | Body |
+|---|---|
+| `shape` | Valid JSON, with the card buried in an envelope and nothing a reader validates at the top level. |
+| `syntax` | The card's own JSON, cut off mid-structure, so it does not parse. |
+| `html` | An HTML page, served at `200` — what a host returns when it has no idea what the path is. |
+| `huge` | A card padded past any sane size limit. |
+
+They compose: `status=503&malformed=html` is a `503` with an HTML body, and `delay` applies to
+whatever the response turns out to be. Values out of range are dropped rather than clamped, since a
+clamped status is a different test than the one you asked for.
+
+Every malformed body is derived from the card the seed produced, so a failing response reproduces
+byte for byte exactly as a good one does. `X-Card-Config` still echoes what was applied.
+
 ## What the generator guarantees
 
-The cards are random, but they are always importable. Every card:
+None of the above touches the generator: the failure options decide what the route does with a
+card, not what a card is. The cards are random, but they are always importable. Every card:
 
 - carries a non-empty `name`, `description`, and `version`
 - uses an **exact** semver `version` — never a range or an alias like `^1.2` or `latest`, which
