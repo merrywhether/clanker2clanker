@@ -43,6 +43,10 @@ export default function Home() {
                   <a href={LEGACY_PATH}>{LEGACY_PATH}</a>{' '}
                   <span className="path-note">— the pre-1.0 location, same card</span>
                 </li>
+                <li>
+                  <a href="/llms.txt">/llms.txt</a>{' '}
+                  <span className="path-note">— every option above, for whatever reads it</span>
+                </li>
               </ul>
             </div>
           </div>

@@ -7,6 +7,7 @@ import {
   CardConfig,
   DELAY_MAX_MS,
   INTERFACES_RANGE,
+  MALFORMED_DESCRIPTIONS,
   MALFORMED_KINDS,
   MalformedKind,
   OverridableField,
@@ -313,7 +314,7 @@ export function CardConsole({ children }: { children?: ReactNode }) {
                   </span>
                   <span className="field-hint">
                     {config?.malformed
-                      ? MALFORMED_HINTS[config.malformed]
+                      ? MALFORMED_DESCRIPTIONS[config.malformed]
                       : 'The route answers with a card.'}
                   </span>
                 </label>
@@ -385,13 +386,6 @@ const MALFORMED_LABELS: Record<MalformedKind, string> = {
   syntax: 'Truncated',
   html: 'HTML page',
   huge: 'Oversized',
-}
-
-const MALFORMED_HINTS: Record<MalformedKind, string> = {
-  shape: 'Valid JSON, with no card at the top level.',
-  syntax: 'Cut off mid-structure, so it will not parse.',
-  html: 'An HTML page, served at 200.',
-  huge: 'A card padded past any size limit.',
 }
 
 /**

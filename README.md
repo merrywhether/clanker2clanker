@@ -14,6 +14,7 @@ same saved JSON file.
 | `/` | Landing page. Generates a card in the browser, with copy, regenerate, and the options below. |
 | `/.well-known/agent-card.json` | A freshly generated card. |
 | `/.well-known/agent.json` | The same, at the pre-1.0 location. |
+| `/llms.txt` | Everything below, for whatever arrives without a human attached. |
 
 Both well-known routes answer `200` with `application/json` and `Cache-Control: no-store`, and every
 request returns a different card. The seed that produced a card comes back in the `X-Card-Config`
@@ -99,6 +100,13 @@ card, not what a card is. The cards are random, but they are always importable. 
 The `supportedInterfaces[].url` values point back at whatever origin served the card.
 
 Nothing on the other end of those URLs answers. This is a card, not an agent.
+
+## llms.txt
+
+`/llms.txt` documents the whole option grammar on the site itself, which is otherwise only spelled
+out here and in the page's controls. It is generated from the codec's own constants — the ranges,
+the malformed kinds, the well-known paths — rather than written out, so it cannot drift from the
+parser, and the examples name the host the reader actually reached.
 
 ## Development
 

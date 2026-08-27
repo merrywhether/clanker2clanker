@@ -53,6 +53,14 @@ export type MalformedKind = (typeof MALFORMED_KINDS)[number]
 
 const DEFAULT_MALFORMED: MalformedKind = 'shape'
 
+/** One sentence each, shared by the page's controls and the machine-readable docs at /llms.txt. */
+export const MALFORMED_DESCRIPTIONS: Record<MalformedKind, string> = {
+  shape: 'Valid JSON, with no card at the top level.',
+  syntax: 'Cut off mid-structure, so it will not parse.',
+  html: 'An HTML page, served at 200.',
+  huge: 'A card padded past any size limit.',
+}
+
 /** `version=auto` stamps the fetch time into the patch segment. */
 export const AUTO_VERSION = 'auto'
 
