@@ -97,7 +97,8 @@ function responseHeaders(config?: string, status?: number): HeadersInit {
     'cache-control': 'no-store',
     'x-robots-tag': 'noindex',
     ...(config && { 'x-card-config': config }),
-    // A 401 without this is malformed, and the challenge is part of what a caller is testing.
+    // A 401 without this is malformed by the spec. Worth sending, but do not count on it: the CDN
+    // in front of the deployed site strips this header, so only a direct origin fetch sees it.
     ...(status === 401 && { 'www-authenticate': 'Bearer realm="clanker2clanker"' }),
   }
 }

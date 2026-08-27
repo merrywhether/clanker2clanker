@@ -56,7 +56,7 @@ the well-known routes fail on request, in the same encoded string as everything 
 
 | Option | Effect |
 |---|---|
-| `status` | Answer with this code instead of `200`. `300`–`599`. A `401` also sends `WWW-Authenticate`, which the spec requires and some clients act on. |
+| `status` | Answer with this code instead of `200`. `300`–`599`. A `401` also sends `WWW-Authenticate`, though the CDN in front of the deployed site strips it. |
 | `redirect` | Answer with a redirect to this location, absolute or rooted. `302` unless `status` names another `3xx`. |
 | `malformed` | Answer `200` with something that is not a usable card. |
 | `delay` | Hold the response open this many milliseconds first, up to `8000`. |
