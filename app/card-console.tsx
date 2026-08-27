@@ -6,6 +6,7 @@ import {
   AUTO_VERSION,
   CardConfig,
   DELAY_MAX_MS,
+  EMPTY_CONFIG,
   INTERFACES_RANGE,
   MALFORMED_DESCRIPTIONS,
   MALFORMED_KINDS,
@@ -80,6 +81,10 @@ export function CardConsole({ children }: { children?: ReactNode }) {
     }
   }
 
+  // A fresh overrides object every time, or every reset would hand back the same shared one for
+  // the field editors to mutate their way into.
+  const reset = () => setConfig({ ...EMPTY_CONFIG, overrides: {} })
+
   const update = (patch: Partial<CardConfig>) =>
     setConfig((current) => (current ? { ...current, ...patch } : current))
 
@@ -152,6 +157,11 @@ export function CardConsole({ children }: { children?: ReactNode }) {
         <div className="edge-inner">
           <header className="panel-head">
             <h2 className="panel-title">Options</h2>
+            <div className="actions">
+              <button type="button" className="btn" onClick={reset} disabled={!encoded}>
+                Reset
+              </button>
+            </div>
           </header>
           <div className="panel-body">
             <div className="controls">
