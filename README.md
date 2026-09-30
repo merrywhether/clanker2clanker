@@ -138,6 +138,18 @@ volcano use clanker2clanker
 volcano cloud frontends deploy --name clanker2clanker --path .
 ```
 
+A newly created Volcano frontend receives none of the project's variables, so `SITE_URL` has to be
+scoped to it before a build can see it:
+
+```yaml
+# applied with: volcano cloud config deploy -f <file>
+version: 1
+frontends:
+  - name: clanker2clanker
+    variable_scope: scoped
+    variables: [SITE_URL]
+```
+
 ## Roadmap
 
 - Cards targeting the older A2A versions at `/.well-known/agent.json`
